@@ -10,15 +10,25 @@ keywords = ["cargo", "licensing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "bundle_licenses_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cargo-bundle-licenses"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = "1.0.43"
 cargo_metadata = "0.14.0"
 env_logger = "0.9.0"
+itertools = "0.10.1"
 log = "0.4.14"
 slug = "0.1.4"
 structopt = "0.3.22"
+thiserror = "1.0.27"
 toml = "0.5.8"
 
 
 [build-dependencies]
-built = "0.5.1"
+built = {version = "0.5.1", features = ["git2"]}

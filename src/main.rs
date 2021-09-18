@@ -1,3 +1,5 @@
+use anyhow::Result;
+use env_logger::Env;
 use structopt::{clap::AppSettings::ColoredHelp, StructOpt};
 
 pub mod built_info {
@@ -33,6 +35,18 @@ pub mod built_info {
 #[structopt(name = "bundle-licenses", author, global_setting(ColoredHelp), version = built_info::VERSION.as_str())]
 pub struct Opts {}
 
-fn main() {
+/// Parse args and set up logging / tracing
+fn setup() -> Opts {
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+
+    Opts::from_args()
+}
+
+fn main() -> Result<()> {
+    let opts = setup();
     println!("Hello, world!");
+    Ok(())
 }
