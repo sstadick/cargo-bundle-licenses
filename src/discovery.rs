@@ -170,8 +170,10 @@ pub fn find_package_license(
         }
     }
 
-    if texts.is_empty() && generic.is_some() {
-        texts.push(generic.unwrap());
+    if texts.is_empty() {
+        if let Some(generic) = generic {
+            texts.push(generic);
+        }
     }
 
     Ok(texts)
