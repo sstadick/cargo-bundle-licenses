@@ -34,7 +34,11 @@ impl BundleBuilder {
 
         let roots = loader.get_package_roots()?;
         let packages = {
-            let mut packages = loader.get_root_dependencies(&roots)?;
+            let mut packages = loader
+                .get_root_dependencies(&roots)?
+                .into_iter()
+                .filter(|&p| !roots.iter().any(|&r| r.name == p.name))
+                .collect::<Vec<_>>();
             packages.sort_by_key(|p| (&p.name, &p.version));
             packages
         };
