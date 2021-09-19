@@ -1,4 +1,4 @@
-# 🧑‍⚖️ cargo-bundle-licenses
+# cargo-bundle-licenses
 
 <p align="center">
   <a href="https://github.com/sstadick/cargo-bundle-licenses/actions?query=workflow%3ACheck"><img src="https://github.com/sstadick/cargo-bundle-licenses/workflows/Check/badge.svg" alt="Build Status"></a>
