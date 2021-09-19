@@ -85,4 +85,4 @@ jobs:
         run: cargo install --path .
       
       - name: Check self license
-        run: cargo bundle-licenses --format yaml --output CI.THIRDPARTY.yaml --previous THIRDPARTY.yaml --check-previous
+        run: cargo bundle-licenses --format yaml --output CI.THIRDPARTY.yml --previous THIRDPARTY.yml --check-previous
