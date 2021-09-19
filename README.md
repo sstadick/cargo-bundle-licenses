@@ -1,6 +1,15 @@
-# cargo-bundle-licenses
+# 🧑‍⚖️ cargo-bundle-licenses
+
+<p align="center">
+  <a href="https://github.com/sstadick/cargo-bundle-licenses/actions?query=workflow%3ACheck"><img src="https://github.com/sstadick/cargo-bundle-licenses/workflows/Check/badge.svg" alt="Build Status"></a>
+  <img src="https://img.shields.io/crates/l/cargo-bundle-licenses.svg" alt="license">
+  <a href="https://crates.io/crates/cargo-bundle-licenses"><img src="https://img.shields.io/crates/v/cargo-bundle-licenses.svg?colorB=319e8c" alt="Version info"></a><br>
+</p>
 
 Bundle all third-party licenses into a single file.
+
+
+**NOTE** This tools is not a lawyer and no guarantee of correctness can be made regarding the licenses that it selects. This tool relies on the information supplied in package metadata to be correct, this is not guaranteed so for "real" scenarios it is recommended that all licenses be reviewed and verified manually as well.
 
 ## Install
 
