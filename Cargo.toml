@@ -7,7 +7,6 @@ license = "MIT/Apache-2.0"
 description = "Bundle licensing of dependencies"
 repository = "https://github.com/sstadick/cargo-bundle-licenses"
 keywords = ["cargo", "licensing"]
-include = ["THIRDPARTY.yml"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

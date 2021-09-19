@@ -45,10 +45,6 @@ The most common cause of missing licenses seems to be workspaces that don't `inc
 
 A package license may receive a confidence warning stating that `cargo-bundle-licenses` is "unsure" or "semi" confident. This means that when the found license was compared to a template license it was found to have diverged in more than a few words. You should verify that the licence text is in fact correct in these cases.
 
-## Include your THIRDPARTY file in your distribution
-
-In your `Cargo.toml` add an `include: ["THIRDPARTY.json"]` to make sure your licenses go with you after all this hard work. See [docs](https://doc.rust-lang.org/cargo/reference/manifest.html#the-exclude-and-include-fields).
-
 ## Attributions
 
 This crate was heavily inspired by [`cargo-lichking`](https://github.com/Nemo157/cargo-lichking).
