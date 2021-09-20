@@ -122,7 +122,10 @@ fn main() -> Result<()> {
         return Err(err);
     }
 
-    if previous.is_some() && opts.check_previous && previous.unwrap().check_subset(&bundle) {
+    if previous.is_some()
+        && opts.check_previous
+        && !previous.as_ref().unwrap().check_subset(&bundle)
+    {
         log::error!("Previous bundle does not match latest bundle.");
         exit(1);
     }

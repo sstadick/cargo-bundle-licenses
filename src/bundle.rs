@@ -125,6 +125,11 @@ impl Bundle {
     /// Compare another [`Bundle`] against this [`Bundle`] requiring that "other" be a strict subset of self.
     pub fn check_subset(&self, other: &Self) -> bool {
         if self.root_name != other.root_name {
+            log::error!(
+                "Checked package root {} does not match existing package root {}",
+                self.root_name,
+                other.root_name
+            );
             return false;
         }
 
@@ -134,9 +139,11 @@ impl Bundle {
                     && self_lic.package_version == lic.package_version
             }) {
                 if self_lic != lic {
+                    log::error!("Self {:?} does not match Other {:?}", self_lic, lic);
                     return false;
                 }
             } else {
+                log::error!("Could not find {:?} in Self", lic);
                 return false;
             }
         }
