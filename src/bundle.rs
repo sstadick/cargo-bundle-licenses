@@ -139,11 +139,21 @@ impl Bundle {
                     && self_lic.package_version == lic.package_version
             }) {
                 if self_lic != lic {
-                    log::error!("Self {:?} does not match Other {:?}", self_lic, lic);
+                    log::error!(
+                        "Previous {}:{} does not match new {}:{}",
+                        self_lic.package_name,
+                        self_lic.package_version,
+                        lic.package_name,
+                        lic.package_version
+                    );
                     return false;
                 }
             } else {
-                log::error!("Could not find {:?} in Self", lic);
+                log::error!(
+                    "Could not find {}:{} in previous",
+                    lic.package_name,
+                    lic.package_version
+                );
                 return false;
             }
         }
