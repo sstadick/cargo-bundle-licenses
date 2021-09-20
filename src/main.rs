@@ -82,7 +82,7 @@ pub struct Opts {
     #[structopt(long, short)]
     previous: Option<PathBuf>,
 
-    /// After filling in not-found licenses, check if previous matches new.
+    /// After filling in not-found licenses, check if new is a strict subset of previous.
     #[structopt(long, short)]
     check_previous: bool,
 }
@@ -122,7 +122,10 @@ fn main() -> Result<()> {
         return Err(err);
     }
 
-    if previous.is_some() && opts.check_previous && previous.unwrap() != bundle {
+    if previous.is_some()
+        && opts.check_previous
+        && !previous.as_ref().unwrap().check_subset(&bundle)
+    {
         log::error!("Previous bundle does not match latest bundle.");
         exit(1);
     }

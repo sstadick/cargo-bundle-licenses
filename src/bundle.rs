@@ -103,7 +103,7 @@ pub struct Bundle {
 }
 
 impl Bundle {
-    fn new(roots: &[&Package], third_party_libraries: Vec<FinalizedLicense>) -> Self {
+    pub fn new(roots: &[&Package], third_party_libraries: Vec<FinalizedLicense>) -> Self {
         let root_name = if roots.len() == 1 {
             roots[0].name.clone()
         } else {
@@ -120,6 +120,44 @@ impl Bundle {
             root_name,
             third_party_libraries,
         }
+    }
+
+    /// Compare another [`Bundle`] against this [`Bundle`] requiring that "other" be a strict subset of self.
+    pub fn check_subset(&self, other: &Self) -> bool {
+        if self.root_name != other.root_name {
+            log::error!(
+                "Checked package root {} does not match existing package root {}",
+                self.root_name,
+                other.root_name
+            );
+            return false;
+        }
+
+        for lic in &other.third_party_libraries {
+            if let Some(self_lic) = self.third_party_libraries.iter().find(|self_lic| {
+                self_lic.package_name == lic.package_name
+                    && self_lic.package_version == lic.package_version
+            }) {
+                if self_lic != lic {
+                    log::error!(
+                        "Previous {}:{} does not match new {}:{}",
+                        self_lic.package_name,
+                        self_lic.package_version,
+                        lic.package_name,
+                        lic.package_version
+                    );
+                    return false;
+                }
+            } else {
+                log::error!(
+                    "Could not find {}:{} in previous",
+                    lic.package_name,
+                    lic.package_version
+                );
+                return false;
+            }
+        }
+        true
     }
 }
 

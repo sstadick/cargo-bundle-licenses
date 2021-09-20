@@ -45,6 +45,12 @@ The most common cause of missing licenses seems to be workspaces that don't `inc
 
 A package license may receive a confidence warning stating that `cargo-bundle-licenses` is "unsure" or "semi" confident. This means that when the found license was compared to a template license it was found to have diverged in more than a few words. You should verify that the licence text is in fact correct in these cases.
 
+## Differences from other tools
+
+- `cargo-about` also finds and aggregates the license texts of all dependencies. `cargo-bundle-licenses` is different in that it is focused more on generating _something_ and then allowing that to be manually updated with not-found licenses whereas `cargo-about` will not generate output in that scenario. Additionally, `cargo-bundle-licenses` allows for manual updates to be applied to later versions of the thirdparty file. However, `cargo-about` does generate a very nice human readable format, and provides more granularity in what packages / licenses are allowed.
+- `cargo-license` only generates a list of licenses as found in the `Cargo.toml` files.
+- `cargo-deny` TODO
+
 ## Attributions
 
 This crate was heavily inspired by [`cargo-lichking`](https://github.com/Nemo157/cargo-lichking).
