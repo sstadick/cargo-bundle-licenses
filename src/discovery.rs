@@ -172,7 +172,9 @@ pub fn find_package_license(
             if let Ok(text) = fs::read_to_string(&rel_path) {
                 let confidence = check_against_template(&text, license);
                 generic = Some(LicenseText {
-                    path: rel_path.into_std_path_buf(), text, confidence
+                    path: rel_path.into_std_path_buf(),
+                    text,
+                    confidence,
                 });
             }
         }
