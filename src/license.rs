@@ -60,6 +60,7 @@ impl License {
                 include_str!("licenses/Apache-2.0_WITH_LLVM-exception")
             }
             License::BSD_0_Clause => include_str!("licenses/0BSD"),
+            License::BSD_2_Clause => include_str!("licenses/BSD-2-Clause"),
             License::BSD_3_Clause => include_str!("licenses/BSD-3-Clause"),
             License::BSL_1_0 => include_str!("licenses/BSL-1.0"),
             License::GPL_2_0Plus => include_str!("licenses/GPL-2.0-or-later"),
