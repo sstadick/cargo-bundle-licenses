@@ -4,9 +4,12 @@
 //!
 //! For "exceptions" follow https://spdx.dev/wp-content/uploads/sites/41/2020/08/SPDX-specification-2-2.pdf#%5B%7B%22num%22%3A233%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C69%2C650%2C0%5D
 //! and treat a license "with" "exception" as a new license, i.e. Apache-2.0 WITH LLVM-exception is treated as its own license of now.
+use std::collections::{HashSet, VecDeque};
 use std::{fmt, path::PathBuf, str::FromStr};
 
 use slug::slugify;
+use spdx::expression::ExprNode;
+use spdx::ParseMode;
 
 #[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Debug, Clone)]
 #[allow(non_camel_case_types)]
@@ -78,44 +81,75 @@ impl FromStr for License {
     type Err = core::convert::Infallible;
 
     fn from_str(s: &str) -> Result<License, core::convert::Infallible> {
-        Ok(match s.trim() {
-            "Unlicense" => License::Unlicense,
-            "0BSD" => License::BSD_0_Clause,
-            "CC0-1.0" => License::CC0_1_0,
-            "MIT" => License::MIT,
-            "X11" => License::X11,
-            "BSD-2-Clause" => License::BSD_2_Clause,
-            "BSD-3-Clause" => License::BSD_3_Clause,
-            "BSL-1.0" => License::BSL_1_0,
-            "Apache-2.0" => License::Apache_2_0,
-            "Apache-2.0 WITH LLVM-exception" => License::Apache_2_0_WITH_LLVM_exception,
-            "LGPL-2.0-only" | "LGPL-2.0" => License::LGPL_2_0,
-            "LGPL-2.1-only" | "LGPL-2.1" => License::LGPL_2_1,
-            "LGPL-2.1-or-later" | "LGPL-2.1+" => License::LGPL_2_1Plus,
-            "LGPL-3.0-only" | "LGPL-3.0" => License::LGPL_3_0,
-            "LGPL-3.0-or-later" | "LGPL-3.0+" => License::LGPL_3_0Plus,
-            "MPL-1.1" => License::MPL_1_1,
-            "MPL-2.0" => License::MPL_2_0,
-            "GPL-2.0-only" | "GPL-2.0" => License::GPL_2_0,
-            "GPL-2.0-or-later" | "GPL-2.0+" => License::GPL_2_0Plus,
-            "GPL-3.0-only" | "GPL-3.0" => License::GPL_3_0,
-            "GPL-3.0-or-later" | "GPL-3.0+" => License::GPL_3_0Plus,
-            "AGPL-3.0-only" | "AGPL-3.0" => License::AGPL_3_0,
-            "AGPL-3.0-or-later" | "AGPL-3.0+" => License::AGPL_3_0Plus,
-            "Zlib" => License::Zlib,
-            // TODO: Sort out the SPDX "AND"
-            s if s.contains('/') || s.contains(" OR ") => {
-                let mut licenses = s
-                    .split('/')
-                    .flat_map(|s| s.split(" OR "))
-                    .map(str::parse)
-                    .map(Result::unwrap)
-                    .collect::<Vec<License>>();
-                licenses.sort();
-                License::Multiple(licenses)
+        if let Ok(expr) = spdx::expression::Expression::parse_mode(s, ParseMode::LAX) {
+            return Ok(process_spdx_expression(expr));
+        }
+        Ok(simple_license(s))
+    }
+}
+
+fn simple_license(s: &str) -> License {
+    match s.trim() {
+        "Unlicense" => License::Unlicense,
+        "0BSD" => License::BSD_0_Clause,
+        "CC0-1.0" => License::CC0_1_0,
+        "MIT" => License::MIT,
+        "X11" => License::X11,
+        "BSD-2-Clause" => License::BSD_2_Clause,
+        "BSD-3-Clause" => License::BSD_3_Clause,
+        "BSL-1.0" => License::BSL_1_0,
+        "Apache-2.0" => License::Apache_2_0,
+        "Apache-2.0 WITH LLVM-exception" => License::Apache_2_0_WITH_LLVM_exception,
+        "LGPL-2.0-only" | "LGPL-2.0" => License::LGPL_2_0,
+        "LGPL-2.1-only" | "LGPL-2.1" => License::LGPL_2_1,
+        "LGPL-2.1-or-later" | "LGPL-2.1+" => License::LGPL_2_1Plus,
+        "LGPL-3.0-only" | "LGPL-3.0" => License::LGPL_3_0,
+        "LGPL-3.0-or-later" | "LGPL-3.0+" => License::LGPL_3_0Plus,
+        "MPL-1.1" => License::MPL_1_1,
+        "MPL-2.0" => License::MPL_2_0,
+        "GPL-2.0-only" | "GPL-2.0" => License::GPL_2_0,
+        "GPL-2.0-or-later" | "GPL-2.0+" => License::GPL_2_0Plus,
+        "GPL-3.0-only" | "GPL-3.0" => License::GPL_3_0,
+        "GPL-3.0-or-later" | "GPL-3.0+" => License::GPL_3_0Plus,
+        "AGPL-3.0-only" | "AGPL-3.0" => License::AGPL_3_0,
+        "AGPL-3.0-or-later" | "AGPL-3.0+" => License::AGPL_3_0Plus,
+        "Zlib" => License::Zlib,
+        // TODO: Sort out the SPDX "AND"
+        s if s.contains('/') || s.contains(" OR ") => {
+            let mut licenses = s
+                .split('/')
+                .flat_map(|s| s.split(" OR "))
+                .map(str::parse)
+                .map(Result::unwrap)
+                .collect::<Vec<License>>();
+            licenses.sort();
+            License::Multiple(licenses)
+        }
+        s => License::Custom(s.to_owned()),
+    }
+}
+
+fn process_spdx_expression(expr: spdx::Expression) -> License {
+    let mut collection = Vec::new();
+    let mut queue = expr.iter().collect::<VecDeque<_>>();
+
+    while let Some(elem) = queue.pop_front() {
+        match elem {
+            ExprNode::Op(_) => { /*ignoring operators as we just need a list of used licenses and not how they are combined*/
             }
-            s => License::Custom(s.to_owned()),
-        })
+            ExprNode::Req(req) => collection.push(simple_license(&req.req.to_string())),
+        }
+    }
+
+    let mut tmp = HashSet::new();
+
+    // de-duplicate while retaining the order
+    collection.retain(|elem| tmp.insert(elem.to_owned()));
+
+    match &collection.as_slice() {
+        [single] => single.to_owned(),
+        [_, ..] => License::Multiple(collection.to_vec()),
+        [] => simple_license(expr.as_ref()),
     }
 }
 
@@ -180,5 +214,91 @@ impl License {
         };
         synonyms.sort_by_key(|value| -(value.len() as i64));
         synonyms
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn simple_spdx() {
+        assert_eq!(License::from_str("Unlicense"), Ok(License::Unlicense));
+        assert_eq!(License::from_str("0BSD"), Ok(License::BSD_0_Clause));
+        assert_eq!(License::from_str("CC0-1.0"), Ok(License::CC0_1_0));
+        assert_eq!(License::from_str("MIT"), Ok(License::MIT));
+        assert_eq!(License::from_str("X11"), Ok(License::X11));
+        assert_eq!(License::from_str("BSD-2-Clause"), Ok(License::BSD_2_Clause));
+        assert_eq!(License::from_str("BSD-3-Clause"), Ok(License::BSD_3_Clause));
+        assert_eq!(License::from_str("BSL-1.0"), Ok(License::BSL_1_0));
+        assert_eq!(License::from_str("Apache-2.0"), Ok(License::Apache_2_0));
+        assert_eq!(License::from_str("LGPL-2.0-only"), Ok(License::LGPL_2_0));
+        assert_eq!(License::from_str("LGPL-2.0"), Ok(License::LGPL_2_0));
+        assert_eq!(License::from_str("LGPL-2.1-only"), Ok(License::LGPL_2_1));
+        assert_eq!(License::from_str("LGPL-2.1"), Ok(License::LGPL_2_1));
+        assert_eq!(
+            License::from_str("LGPL-2.1-or-later"),
+            Ok(License::LGPL_2_1Plus)
+        );
+        assert_eq!(License::from_str("LGPL-2.1+"), Ok(License::LGPL_2_1Plus));
+        assert_eq!(License::from_str("LGPL-3.0-only"), Ok(License::LGPL_3_0));
+        assert_eq!(License::from_str("LGPL-3.0"), Ok(License::LGPL_3_0));
+        assert_eq!(
+            License::from_str("LGPL-3.0-or-later"),
+            Ok(License::LGPL_3_0Plus)
+        );
+        assert_eq!(License::from_str("LGPL-3.0+"), Ok(License::LGPL_3_0Plus));
+        assert_eq!(License::from_str("MPL-1.1"), Ok(License::MPL_1_1));
+        assert_eq!(License::from_str("MPL-2.0"), Ok(License::MPL_2_0));
+        assert_eq!(License::from_str("GPL-2.0-only"), Ok(License::GPL_2_0));
+        assert_eq!(License::from_str("GPL-2.0"), Ok(License::GPL_2_0));
+        assert_eq!(
+            License::from_str("GPL-2.0-or-later"),
+            Ok(License::GPL_2_0Plus)
+        );
+        assert_eq!(License::from_str("GPL-2.0+"), Ok(License::GPL_2_0Plus));
+        assert_eq!(License::from_str("GPL-3.0-only"), Ok(License::GPL_3_0));
+        assert_eq!(License::from_str("GPL-3.0"), Ok(License::GPL_3_0));
+        assert_eq!(
+            License::from_str("GPL-3.0-or-later"),
+            Ok(License::GPL_3_0Plus)
+        );
+        assert_eq!(License::from_str("GPL-3.0+"), Ok(License::GPL_3_0Plus));
+        assert_eq!(License::from_str("AGPL-3.0-only"), Ok(License::AGPL_3_0));
+        assert_eq!(License::from_str("AGPL-3.0"), Ok(License::AGPL_3_0));
+        assert_eq!(
+            License::from_str("AGPL-3.0-or-later"),
+            Ok(License::AGPL_3_0Plus)
+        );
+        assert_eq!(License::from_str("AGPL-3.0+"), Ok(License::AGPL_3_0Plus));
+        assert_eq!(License::from_str("Zlib"), Ok(License::Zlib));
+    }
+
+    #[test]
+    fn simple_with_exception() {
+        assert_eq!(
+            License::from_str("Apache-2.0 WITH LLVM-exception"),
+            Ok(License::Apache_2_0_WITH_LLVM_exception)
+        );
+    }
+
+    #[test]
+    fn complex_spdx() {
+        assert_eq!(
+            License::from_str("Apache-2.0 OR MIT"),
+            Ok(License::Multiple(vec![License::Apache_2_0, License::MIT]))
+        );
+        assert_eq!(
+            License::from_str("Apache-2.0 / MIT"),
+            Ok(License::Multiple(vec![License::Apache_2_0, License::MIT]))
+        );
+        assert_eq!(
+            License::from_str("(Apache-2.0 OR MIT) AND BSD-3-Clause"),
+            Ok(License::Multiple(vec![
+                License::Apache_2_0,
+                License::MIT,
+                License::BSD_3_Clause
+            ]))
+        );
     }
 }
