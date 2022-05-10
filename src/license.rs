@@ -4,7 +4,6 @@
 //!
 //! For "exceptions" follow https://spdx.dev/wp-content/uploads/sites/41/2020/08/SPDX-specification-2-2.pdf#%5B%7B%22num%22%3A233%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C69%2C650%2C0%5D
 //! and treat a license "with" "exception" as a new license, i.e. Apache-2.0 WITH LLVM-exception is treated as its own license of now.
-use std::collections::{HashSet, VecDeque};
 use std::{fmt, path::PathBuf, str::FromStr};
 
 use slug::slugify;
@@ -132,20 +131,21 @@ fn simple_license(s: &str) -> License {
 
 fn process_spdx_expression(expr: spdx::Expression) -> License {
     let mut collection = Vec::new();
-    let mut queue = expr.iter().collect::<VecDeque<_>>();
 
-    while let Some(elem) = queue.pop_front() {
+    for elem in expr.iter() {
         match elem {
-            ExprNode::Op(_) => { /*ignoring operators as we just need a list of used licenses and not how they are combined*/
+            ExprNode::Op(_) => {
+                /* ignoring operators as we just need a list of used licenses and not how they are combined */
             }
-            ExprNode::Req(req) => collection.push(simple_license(&req.req.to_string())),
+            ExprNode::Req(req) => {
+                let license = simple_license(&req.req.to_string());
+                // don't include licenses more than once
+                if !collection.contains(&license) {
+                    collection.push(license)
+                }
+            }
         }
     }
-
-    let mut tmp = HashSet::new();
-
-    // de-duplicate while retaining the order
-    collection.retain(|elem| tmp.insert(elem.to_owned()));
 
     match &collection.as_slice() {
         [single] => single.to_owned(),
