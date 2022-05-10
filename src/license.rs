@@ -82,9 +82,10 @@ impl FromStr for License {
 
     fn from_str(s: &str) -> Result<License, core::convert::Infallible> {
         if let Ok(expr) = spdx::expression::Expression::parse_mode(s, ParseMode::LAX) {
-            return Ok(process_spdx_expression(expr));
+            Ok(process_spdx_expression(expr))
+        } else {
+            Ok(simple_license(s))
         }
-        Ok(simple_license(s))
     }
 }
 
