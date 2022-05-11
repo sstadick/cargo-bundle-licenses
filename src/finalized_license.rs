@@ -42,7 +42,10 @@ impl FinalizedLicense {
         Self {
             package_name: package.name.clone(),
             package_version: package.version.to_string(),
-            license: license.to_string(),
+            license: package
+                .license
+                .to_owned()
+                .unwrap_or_else(|| license.to_string()),
             licenses,
         }
     }
