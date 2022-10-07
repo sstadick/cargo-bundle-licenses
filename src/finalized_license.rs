@@ -8,6 +8,7 @@ use crate::license::License;
 
 pub static LICENSE_NOT_FOUNT_TEXT: &str = "NOT FOUND";
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct LicenseAndText {
     /// The license itself in SPDX format
