@@ -1,6 +1,6 @@
 //! A FoundLicense represents the raw form of the found parts of a license for a given package.
 
-use cargo_metadata::Package;
+use cargo_metadata::{camino::Utf8PathBuf, Package};
 use thiserror::Error;
 
 use crate::{
@@ -258,8 +258,20 @@ impl Licensed for Package {
             .as_ref()
             .and_then(|license| license.parse::<License>().ok())
             .or_else(|| {
-                self.license_file()
-                    .map(|p| License::File(p.into_std_path_buf()))
+                self.license_file().map(|license_file| {
+                    // If the license file starts with the cargo_home path, strip it and replace with the ENV var $CARGO_HOME.
+                    // This makes licenses comparable across machines.
+                    let license_file = if let Some(stripped_license_file) = home::cargo_home()
+                        .ok()
+                        .and_then(|cargo_home| license_file.strip_prefix(cargo_home).ok())
+                    {
+                        Utf8PathBuf::from("$CARGO_HOME").join(stripped_license_file)
+                    } else {
+                        // license file is not under $CARGO_HOME keep it as is
+                        license_file
+                    };
+                    License::File(license_file.into_std_path_buf())
+                })
             })
             .unwrap_or_default()
     }
