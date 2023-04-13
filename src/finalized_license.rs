@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 
 use cargo_metadata::Package;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::license::License;
@@ -59,7 +60,12 @@ impl PartialEq for FinalizedLicense {
             return false;
         }
 
-        for (a, b) in self.licenses.iter().zip(other.licenses.iter()) {
+        for (a, b) in self
+            .licenses
+            .iter()
+            .sorted_by_key(|l| l.license.clone())
+            .zip(other.licenses.iter().sorted_by_key(|l| l.license.clone()))
+        {
             if a != b {
                 return false;
             }
