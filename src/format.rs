@@ -1,7 +1,7 @@
 //! The allowed serialization / deserialization formats.
 use crate::bundle::Bundle;
 use std::io::{self, Read, Write};
-use strum::{EnumString, EnumVariantNames, ToString};
+use strum::{EnumString, EnumVariantNames};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -18,7 +18,7 @@ pub enum FormatError {
     Yaml(#[from] serde_yaml::Error),
 }
 
-#[derive(EnumString, EnumVariantNames, ToString, Debug, Copy, Clone)]
+#[derive(EnumString, EnumVariantNames, Debug, Copy, Clone)]
 #[strum(serialize_all = "kebab-case")]
 pub enum Format {
     #[strum(serialize = "json")]
