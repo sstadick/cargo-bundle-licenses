@@ -19,7 +19,11 @@ pub const CARGO_BUNDLE_LICENSES_VERSION: &str = git_version!(
     prefix = "git:",
     // Note that on the CLI, the cargo-bundle-licenses* needs to be in single quotes
     // When passed here though there seems to be some magic quoting that happens.
-    args = ["--always", "--dirty=-modified", "--match=cargo-bundle-licenses*"]
+    args = [
+        "--always",
+        "--dirty=-modified",
+        "--match=cargo-bundle-licenses*"
+    ]
 );
 
 /// Get a buffered output writer from stdout or a file
