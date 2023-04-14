@@ -22,12 +22,13 @@ required-features = ["binary-dependencies"]
 
 [features]
 default = ["binary-dependencies"]
-binary-dependencies = [ "anyhow", "env_logger", "structopt" ]
+binary-dependencies = [ "anyhow", "env_logger", "structopt", "git-version" ]
 
 [dependencies]
 anyhow = { version = "1.0.70", optional = true }
 cargo_metadata = "0.15.4"
 env_logger = { version = "0.10.0", optional = true }
+git-version = {version = "0.3.5", optional = true }
 # https://doc.rust-lang.org/cargo/guide/cargo-home.html points to this for finding cargo home
 home = "0.5.4"
 itertools = "0.10.5"
@@ -42,8 +43,3 @@ structopt = { version = "0.3.26", optional = true }
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.40"
 toml = "0.7.3"
-
-
-[build-dependencies]
-built = { version = "0.6.0", features = ["git2"] }
-strum = { version = "0.24.1", features = ["derive"] }

@@ -12,34 +12,19 @@ use env_logger::Env;
 use structopt::{clap::AppSettings::ColoredHelp, StructOpt};
 use strum::VariantNames;
 
-pub mod built_info {
-    use structopt::lazy_static::lazy_static;
+use git_version::git_version;
 
-    include!(concat!(env!("OUT_DIR"), "/built.rs"));
-
-    /// Get a software version string including
-    ///   - Git commit hash
-    ///   - Git dirty info (whether the repo had uncommitted changes)
-    ///   - Cargo package version if no git info found
-    fn get_software_version() -> String {
-        let prefix = if let Some(s) = GIT_COMMIT_HASH {
-            format!("{}-{}", PKG_VERSION, s[0..8].to_owned())
-        } else {
-            // This shouldn't happen
-            PKG_VERSION.to_string()
-        };
-        let suffix = match GIT_DIRTY {
-            Some(true) => "-dirty",
-            _ => "",
-        };
-        format!("{}{}", prefix, suffix)
-    }
-
-    lazy_static! {
-        /// Version of the software with git hash
-        pub static ref VERSION: String = get_software_version();
-    }
-}
+pub const CARGO_BUNDLE_LICENSES_VERSION: &str = git_version!(
+    cargo_prefix = "cargo:",
+    prefix = "git:",
+    // Note that on the CLI, the cargo-bundle-licenses* needs to be in single quotes
+    // When passed here though there seems to be some magic quoting that happens.
+    args = [
+        "--always",
+        "--dirty=-modified",
+        "--match=cargo-bundle-licenses*"
+    ]
+);
 
 /// Get a buffered output writer from stdout or a file
 fn get_output(path: Option<PathBuf>) -> Result<Box<dyn Write + Send + 'static>> {
@@ -68,7 +53,7 @@ fn is_broken_pipe(err: &Error) -> bool {
 }
 
 #[derive(StructOpt, Debug)]
-#[structopt(bin_name = "cargo bundle-licenses", author, global_setting(ColoredHelp), version = built_info::VERSION.as_str())]
+#[structopt(bin_name = "cargo bundle-licenses", author, global_setting(ColoredHelp), version = CARGO_BUNDLE_LICENSES_VERSION)]
 pub struct Opts {
     /// The format to write the output in
     #[structopt(long, short, default_value = "toml", possible_values = Format::VARIANTS)]

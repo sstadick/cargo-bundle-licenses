@@ -53,7 +53,7 @@ fn compare(mut text_freq: HashMap<String, u32>, template_freq: &HashMap<String, 
 
     for (word, &count) in template_freq {
         let text_count = text_freq.remove(word).unwrap_or(0);
-        let diff = ((text_count as i32) - (count as i32)).unsigned_abs() as u32;
+        let diff = ((text_count as i32) - (count as i32)).unsigned_abs();
         errors += diff;
     }
 

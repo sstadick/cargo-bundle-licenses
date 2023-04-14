@@ -1,3 +1,6 @@
+# v1.2.0
+- [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/16) Remove build time libgit2 dep.
+
 # v1.1.0
 
 - [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/3) Allow for finding workspace licenses when explicitly given a path.

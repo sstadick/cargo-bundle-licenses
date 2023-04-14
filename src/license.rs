@@ -10,7 +10,7 @@ use slug::slugify;
 use spdx::expression::ExprNode;
 use spdx::ParseMode;
 
-#[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Debug, Clone)]
+#[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Debug, Clone, Default)]
 #[allow(non_camel_case_types)]
 pub enum License {
     // Licenses specified in the [SPDX License List](https://spdx.org/licenses/)
@@ -43,13 +43,8 @@ pub enum License {
     Custom(String),
     File(PathBuf),
     Multiple(Vec<License>),
+    #[default]
     Unspecified,
-}
-
-impl Default for License {
-    fn default() -> License {
-        License::Unspecified
-    }
 }
 
 impl License {
