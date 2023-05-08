@@ -51,7 +51,7 @@ A package license may receive a confidence warning stating that `cargo-bundle-li
 
 - `cargo-about` also finds and aggregates the license texts of all dependencies. `cargo-bundle-licenses` is different in that it is focused more on generating _something_ and then allowing that to be manually updated with not-found licenses whereas `cargo-about` will not generate output in that scenario. Additionally, `cargo-bundle-licenses` allows for manual updates to be applied to later versions of the thirdparty file. However, `cargo-about` does generate a very nice human readable format, and provides more granularity in what packages / licenses are allowed.
 - `cargo-license` only generates a list of licenses as found in the `Cargo.toml` files.
-- `cargo-deny` TODO
+- `cargo-deny` also gathers a list of licenses for dependencies, as well as analysing `LICENSE` files, but it does so with the goal of warning or erroring if any dependencies have licenses that the user deems unacceptable; no collection of license text is emitted
 
 ## Attributions
 
