@@ -38,6 +38,7 @@ pub enum License {
     AGPL_3_0,
     AGPL_3_0Plus,
     Zlib,
+    UnicodeDFS2016,
 
     // Special cases
     Custom(String),
@@ -65,6 +66,7 @@ impl License {
             License::LGPL_2_1Plus => include_str!("licenses/LGPL-2.1-or-later"),
             License::LGPL_3_0Plus => include_str!("licenses/LGPL-3.0-or-later"),
             License::Zlib => include_str!("licenses/Zlib"),
+            License::UnicodeDFS2016 => include_str!("licenses/Unicode-DFS-2016"),
             License::Multiple(_) => unimplemented!(), // This should be impossible to hit
             _ => return None,
         })
@@ -109,6 +111,7 @@ fn simple_license(s: &str) -> License {
         "AGPL-3.0-only" | "AGPL-3.0" => License::AGPL_3_0,
         "AGPL-3.0-or-later" | "AGPL-3.0+" => License::AGPL_3_0Plus,
         "Zlib" => License::Zlib,
+        "Unicode-DFS-2016" => License::UnicodeDFS2016,
         // TODO: Sort out the SPDX "AND"
         s if s.contains('/') || s.contains(" OR ") => {
             let mut licenses = s
@@ -176,6 +179,7 @@ impl fmt::Display for License {
             License::AGPL_3_0 => write!(w, "AGPL-3.0-only"),
             License::AGPL_3_0Plus => write!(w, "AGPL-3.0-or-later"),
             License::Zlib => write!(w, "Zlib"),
+            License::UnicodeDFS2016 => write!(w, "Unicode-DFS-2016"),
             License::Custom(ref s) => write!(w, "{}", s),
             License::File(ref f) => {
                 write!(w, "License specified in file ({})", f.to_string_lossy())
@@ -268,6 +272,10 @@ mod test {
         );
         assert_eq!(License::from_str("AGPL-3.0+"), Ok(License::AGPL_3_0Plus));
         assert_eq!(License::from_str("Zlib"), Ok(License::Zlib));
+        assert_eq!(
+            License::from_str("Unicode-DFS-2016"),
+            Ok(License::UnicodeDFS2016)
+        );
     }
 
     #[test]
