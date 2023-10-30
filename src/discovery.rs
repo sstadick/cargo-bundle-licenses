@@ -167,22 +167,22 @@ pub fn find_package_license(
                     confidence,
                 });
             }
-        } else if let Some(rel_path) = package.license_file() {
-            // Lastly try the specified license file which may work better for workspaces
-            if let Ok(text) = fs::read_to_string(&rel_path) {
-                let confidence = check_against_template(&text, license);
-                generic = Some(LicenseText {
-                    path: rel_path.into_std_path_buf(),
-                    text,
-                    confidence,
-                });
-            }
         }
     }
 
     if texts.is_empty() {
         if let Some(generic) = generic {
             texts.push(generic);
+        } else if let Some(rel_path) = package.license_file() {
+            // Lastly try the specified license file which may work better for workspaces
+            if let Ok(text) = fs::read_to_string(&rel_path) {
+                let confidence = check_against_template(&text, license);
+                texts.push(LicenseText {
+                    path: rel_path.into_std_path_buf(),
+                    text,
+                    confidence,
+                });
+            }
         }
     }
 
