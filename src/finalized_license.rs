@@ -34,6 +34,7 @@ pub struct FinalizedLicense {
     /// The version of the package this license is for.
     pub package_version: String,
     /// The url of the repository from the Cargo.toml.
+    #[serde(default)]
     pub repository: String,
     /// The full license from the Cargo.toml.
     pub license: String,
