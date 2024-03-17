@@ -33,9 +33,12 @@ pub struct FinalizedLicense {
     pub package_name: String,
     /// The version of the package this license is for.
     pub package_version: String,
-    /// The full license from the Cargo.toml
+    /// The url of the repository from the Cargo.toml.
+    #[serde(default)]
+    pub repository: String,
+    /// The full license from the Cargo.toml.
     pub license: String,
-    /// The licenses and their associated text
+    /// The licenses and their associated text.
     pub licenses: Vec<LicenseAndText>,
 }
 
@@ -44,6 +47,7 @@ impl FinalizedLicense {
         Self {
             package_name: package.name.clone(),
             package_version: package.version.to_string(),
+            repository: package.repository.to_owned().unwrap_or_default(),
             license: package
                 .license
                 .to_owned()
