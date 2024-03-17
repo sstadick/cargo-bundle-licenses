@@ -215,6 +215,10 @@ impl License {
                 slugify(self.to_string()).to_lowercase(),
                 String::from("boost"),
             ],
+            License::UnicodeDFS2016 => vec![
+                slugify(self.to_string()).to_lowercase(),
+                String::from("unicode"),
+            ],
             _ => vec![slugify(self.to_string()).to_lowercase()],
         };
         synonyms.sort_by_key(|value| -(value.len() as i64));
