@@ -69,6 +69,7 @@ impl License {
             License::Zlib => include_str!("licenses/Zlib"),
             License::UnicodeDFS2016 => include_str!("licenses/Unicode-DFS-2016"),
             License::ISC => include_str!("licenses/ISC"),
+            License::MPL_2_0 => include_str!("licenses/MPL-2.0"),
             License::Multiple(_) => unimplemented!(), // This should be impossible to hit
             _ => return None,
         })
