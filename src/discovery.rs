@@ -144,29 +144,44 @@ pub fn find_package_license(
 
     let mut generic = None;
     let mut texts = vec![];
-    for entry in fs::read_dir(package.manifest_path.parent().unwrap())? {
-        let entry = entry?;
-        let path = entry.path().clone();
-        let name = entry.file_name().to_string_lossy().into_owned();
 
-        if name_matches(&name, license) {
-            if let Ok(text) = fs::read_to_string(&path) {
-                let confidence = check_against_template(&text, license);
-                texts.push(LicenseText {
-                    path,
-                    text,
-                    confidence,
-                });
+    // if LICENSE file is not found in current_dir
+    // climb path to check if LICENSE file exists in workspace directory
+    let package_dir = package.manifest_path.parent().unwrap();
+    for current_dir in package_dir.ancestors() {
+        if !(current_dir.join("Cargo.toml").exists()) {
+            continue;
+        }
+
+        for entry in fs::read_dir(current_dir)? {
+            let entry = entry?;
+            let path = entry.path().clone();
+            let name = entry.file_name().to_string_lossy().into_owned();
+
+            if name_matches(&name, license) {
+                if let Ok(text) = fs::read_to_string(&path) {
+                    let confidence = check_against_template(&text, license);
+                    texts.push(LicenseText {
+                        path,
+                        text,
+                        confidence,
+                    });
+                }
+            } else if generic_license_name(&name) {
+                if let Ok(text) = fs::read_to_string(&path) {
+                    let confidence = check_against_template(&text, license);
+                    generic = Some(LicenseText {
+                        path,
+                        text,
+                        confidence,
+                    });
+                }
             }
-        } else if generic_license_name(&name) {
-            if let Ok(text) = fs::read_to_string(&path) {
-                let confidence = check_against_template(&text, license);
-                generic = Some(LicenseText {
-                    path,
-                    text,
-                    confidence,
-                });
-            }
+        }
+
+        // break if license file has been found
+        if !texts.is_empty() || generic.is_some() {
+            break;
         }
     }
 
