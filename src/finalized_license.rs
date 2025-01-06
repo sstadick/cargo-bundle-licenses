@@ -1,6 +1,6 @@
 //! A finalized license representation meant for serializing / deserialzing
 use std::collections::HashMap;
-
+use std::fmt::{Display, Formatter};
 use cargo_metadata::Package;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -41,6 +41,28 @@ pub struct FinalizedLicense {
     /// The licenses and their associated text.
     pub licenses: Vec<LicenseAndText>,
 }
+
+
+impl Display for FinalizedLicense {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let spacer_wide = "-".repeat(80);
+        let spacer_small = "-".repeat(40);
+        writeln!(f,"{}",spacer_wide)?;
+        writeln!(f,"Package: {}",self.package_name)?;
+        writeln!(f,"Version: {}",self.package_version)?;
+        writeln!(f,"Repository: {}",self.repository)?;
+        writeln!(f,"License: {}",self.license)?;
+
+        for license in &self.licenses {
+            writeln!(f,"{spacer_small}")?;
+            writeln!(f,"License: {}",license.license)?;
+            writeln!(f, "{}", license.text)?;
+            writeln!(f,"")?;
+        }
+        Ok(())
+    }
+}
+
 
 impl FinalizedLicense {
     pub fn new(package: &Package, license: License, licenses: Vec<LicenseAndText>) -> Self {

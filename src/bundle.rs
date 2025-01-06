@@ -3,6 +3,7 @@
 
 // TODO: builder for bundle command ending in exec like cargo metadata
 
+use std::fmt::{Display, Formatter};
 use crate::{
     finalized_license::{
         finalized_licenses_lookup, FinalizedLicense, LicenseKey, LICENSE_NOT_FOUNT_TEXT,
@@ -95,11 +96,22 @@ impl BundleBuilder {
     }
 }
 
+
+
 /// A bundle of licenses
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Bundle {
     root_name: String,
     third_party_libraries: Vec<FinalizedLicense>,
+}
+
+impl Display for Bundle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for lic in &self.third_party_libraries {
+            writeln!(f, "{}", lic)?;
+        }
+        Ok(())
+    }
 }
 
 impl Bundle {
@@ -120,6 +132,10 @@ impl Bundle {
             root_name,
             third_party_libraries,
         }
+    }
+
+    pub fn get_third_party_libraries(&self) -> Vec<FinalizedLicense> {
+        self.third_party_libraries.clone()
     }
 
     /// Compare another [`Bundle`] against this [`Bundle`] requiring that "other" be a strict subset of self.

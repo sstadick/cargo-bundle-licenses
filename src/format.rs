@@ -1,6 +1,7 @@
 //! The allowed serialization / deserialization formats.
 use crate::bundle::Bundle;
 use std::io::{self, Read, Write};
+use serde::Serialize;
 use strum::{EnumString, EnumVariantNames};
 use thiserror::Error;
 
@@ -27,6 +28,7 @@ pub enum Format {
     Toml,
     #[strum(serialize = "yaml", serialize = "yml")]
     Yaml,
+    Text
 }
 
 impl Format {
@@ -45,6 +47,10 @@ impl Format {
             Format::Yaml => {
                 writer.write_all(serde_yaml::to_string(&bundle)?.as_bytes())?;
             }
+            Format::Text => {
+                let text = format!("{bundle}");
+                writer.write_all(text.as_bytes())?;
+            }
         }
         Ok(())
     }
@@ -58,6 +64,9 @@ impl Format {
                 toml::from_str(&buffer)?
             }
             Format::Yaml => serde_yaml::from_reader(reader)?,
+            Format::Text => {
+                unimplemented!("Text format is only for humans, not machines 🙃")
+            }
         };
         Ok(bundle)
     }
