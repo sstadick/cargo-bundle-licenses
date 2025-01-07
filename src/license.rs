@@ -38,6 +38,7 @@ pub enum License {
     AGPL_3_0,
     AGPL_3_0Plus,
     Zlib,
+    Unicode_3_0,
     UnicodeDFS2016,
     ISC,
 
@@ -67,6 +68,7 @@ impl License {
             License::LGPL_2_1Plus => include_str!("licenses/LGPL-2.1-or-later"),
             License::LGPL_3_0Plus => include_str!("licenses/LGPL-3.0-or-later"),
             License::Zlib => include_str!("licenses/Zlib"),
+            License::Unicode_3_0 => include_str!("licenses/Unicode-3.0"),
             License::UnicodeDFS2016 => include_str!("licenses/Unicode-DFS-2016"),
             License::ISC => include_str!("licenses/ISC"),
             License::MPL_2_0 => include_str!("licenses/MPL-2.0"),
@@ -114,6 +116,7 @@ fn simple_license(s: &str) -> License {
         "AGPL-3.0-only" | "AGPL-3.0" => License::AGPL_3_0,
         "AGPL-3.0-or-later" | "AGPL-3.0+" => License::AGPL_3_0Plus,
         "Zlib" => License::Zlib,
+        "Unicode-3.0" => License::Unicode_3_0,
         "Unicode-DFS-2016" => License::UnicodeDFS2016,
         "ISC" => License::ISC,
         // TODO: Sort out the SPDX "AND"
@@ -183,6 +186,7 @@ impl fmt::Display for License {
             License::AGPL_3_0 => write!(w, "AGPL-3.0-only"),
             License::AGPL_3_0Plus => write!(w, "AGPL-3.0-or-later"),
             License::Zlib => write!(w, "Zlib"),
+            License::Unicode_3_0 => write!(w, "Unicode-3.0"),
             License::UnicodeDFS2016 => write!(w, "Unicode-DFS-2016"),
             License::ISC => write!(w, "ISC"),
             License::Custom(ref s) => write!(w, "{}", s),
@@ -215,7 +219,7 @@ impl License {
                 slugify(self.to_string()).to_lowercase(),
                 String::from("boost"),
             ],
-            License::UnicodeDFS2016 => vec![
+            License::Unicode_3_0 | License::UnicodeDFS2016 => vec![
                 slugify(self.to_string()).to_lowercase(),
                 String::from("unicode"),
             ],
@@ -281,6 +285,7 @@ mod test {
         );
         assert_eq!(License::from_str("AGPL-3.0+"), Ok(License::AGPL_3_0Plus));
         assert_eq!(License::from_str("Zlib"), Ok(License::Zlib));
+        assert_eq!(License::from_str("Unicode-3.0"), Ok(License::Unicode_3_0));
         assert_eq!(
             License::from_str("Unicode-DFS-2016"),
             Ok(License::UnicodeDFS2016)
