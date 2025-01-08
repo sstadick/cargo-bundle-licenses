@@ -1,6 +1,6 @@
 [package]
 name = "cargo-bundle-licenses"
-version = "2.1.1"
+version = "2.2.0"
 authors = ["Seth Stadick"]
 edition = "2018"
 readme = "README.md"
