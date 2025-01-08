@@ -1,3 +1,9 @@
+# v2.2.0
+- [fix](https://github.com/sstadick/cargo-bundle-licenses/pull/45) closes [issue 44](https://github.com/sstadick/cargo-bundle-licenses/issues/44), improve detection of BSD license files.
+
+# v2.1.1
+- [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/41) Add Unicode-3.0 License from @jwodder
+
 # v2.0.0
 - [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/32) Climb path and check workspace directory for LICENSE file from @BlueGreenMagick
 - [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/33) Add MPL-2.0 License from @BlueGreenMagick
