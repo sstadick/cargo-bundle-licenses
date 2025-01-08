@@ -1,8 +1,7 @@
-# v2.2.1
-
-- feature: support cargo binstall
-
 # v2.2.0
+
+- chore: update deps to pull in latest spdx version
+- feature: support cargo binstall
 - [fix](https://github.com/sstadick/cargo-bundle-licenses/pull/45) closes [issue 44](https://github.com/sstadick/cargo-bundle-licenses/issues/44), improve detection of BSD license files.
 
 # v2.1.1
