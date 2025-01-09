@@ -1,3 +1,8 @@
+# v2.3.0
+
+- [fix](https://github.com/sstadick/cargo-bundle-licenses/pull/46): Further improve detection of BSD license files.
+- [chore](https://github.com/sstadick/cargo-bundle-licenses/pull/46): Update reference `THIRDPARTY.yml` file after dependencies update.
+
 # v2.2.0
 
 - chore: update deps to pull in latest spdx version
