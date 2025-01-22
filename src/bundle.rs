@@ -12,6 +12,10 @@ use crate::{
 };
 use cargo_metadata::Package;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
+use std::fs::File;
+use std::io::{BufWriter, Write};
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -99,7 +103,16 @@ impl BundleBuilder {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Bundle {
     root_name: String,
-    third_party_libraries: Vec<FinalizedLicense>,
+    pub third_party_libraries: Vec<FinalizedLicense>,
+}
+
+impl Display for Bundle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for lic in &self.third_party_libraries {
+            writeln!(f, "{}", lic)?;
+        }
+        Ok(())
+    }
 }
 
 impl Bundle {
@@ -120,6 +133,10 @@ impl Bundle {
             root_name,
             third_party_libraries,
         }
+    }
+
+    pub fn get_third_party_libraries(&self) -> Vec<FinalizedLicense> {
+        self.third_party_libraries.clone()
     }
 
     /// Compare another [`Bundle`] against this [`Bundle`] requiring that "other" be a strict subset of self.
@@ -158,6 +175,16 @@ impl Bundle {
             }
         }
         true
+    }
+
+    pub fn write_to_disk_human_readable(
+        &self,
+        mut output: Box<dyn Write + Send>,
+    ) -> Result<(), std::io::Error> {
+        let content = format!("{self}");
+        output.write_all(content.as_bytes())?;
+
+        Ok(())
     }
 }
 

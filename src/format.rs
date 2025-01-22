@@ -1,5 +1,6 @@
 //! The allowed serialization / deserialization formats.
 use crate::bundle::Bundle;
+use serde::Serialize;
 use std::io::{self, Read, Write};
 use strum::{EnumString, EnumVariantNames};
 use thiserror::Error;

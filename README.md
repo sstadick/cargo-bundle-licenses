@@ -35,11 +35,18 @@ cargo bundle-licenses --format yaml --output THIRDPARTY.yml
 cargo bundle-licenses --format yaml --output CI.yaml --previous THIRDPARTY.yml --check-previous
 ```
 
+4. Export a human readable format
+```bash
+cargo bundle-licenses --previous .\THIRDPARTY.yml --human-readable-artifact --output "THIRDPARTY.txt"
+```
+
 To aid in copy-pasting licenses that couldn't be found for one reason other another the [esc](https://github.com/sstadick/esc) tool can be used to properly create escaped license strings to drop into the format of your choosing. 
 
 ## Formats
 
-Currently the supported formats are `json`, `yaml`, and `toml`. A more human readable format that is closer to a classical THIRDPARTY file and already has `serde` support is being actively sought. Please create an issue or PR if you have an idea for this.
+Currently the supported formats are `json`, `yaml`, and `toml`. 
+
+You can also export those previously exported (and maybe edited) files to a human-readable format with `--human-readable-artifact`
 
 ## Common warnings and resolutions
 
