@@ -13,6 +13,7 @@ use structopt::{clap::AppSettings::ColoredHelp, StructOpt};
 use strum::VariantNames;
 
 use git_version::git_version;
+use bundle_licenses_lib::bundle::Bundle;
 
 pub const CARGO_BUNDLE_LICENSES_VERSION: &str = git_version!(
     cargo_prefix = "cargo:",
@@ -70,6 +71,9 @@ pub struct Opts {
     /// After filling in not-found licenses, check if new is a strict subset of previous.
     #[structopt(long, short)]
     check_previous: bool,
+
+    #[structopt(long, short)]
+    human_readable_artifact: bool,
 }
 
 /// Parse args and set up logging / tracing
@@ -92,9 +96,24 @@ fn main() -> Result<()> {
         None
     };
 
+    let output = get_output(opts.output)?;
+
+    if opts.human_readable_artifact {
+        match &previous {
+            None => {
+                log::error!("You need to specify a previous bundle on which you want to generate the human readable format");
+                exit(1);
+            }
+            Some(bundle) => {
+                bundle.write_to_disk_human_readable(output)?;
+                exit(0)
+            }
+        }
+    }
+
     let bundle = BundleBuilder::exec_with_previous(previous.as_ref())?;
 
-    let output = get_output(opts.output)?;
+
 
     if let Err(err) = opts
         .format
