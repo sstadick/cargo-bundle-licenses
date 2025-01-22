@@ -12,8 +12,8 @@ use env_logger::Env;
 use structopt::{clap::AppSettings::ColoredHelp, StructOpt};
 use strum::VariantNames;
 
-use git_version::git_version;
 use bundle_licenses_lib::bundle::Bundle;
+use git_version::git_version;
 
 pub const CARGO_BUNDLE_LICENSES_VERSION: &str = git_version!(
     cargo_prefix = "cargo:",
@@ -112,8 +112,6 @@ fn main() -> Result<()> {
     }
 
     let bundle = BundleBuilder::exec_with_previous(previous.as_ref())?;
-
-
 
     if let Err(err) = opts
         .format

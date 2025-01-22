@@ -3,10 +3,6 @@
 
 // TODO: builder for bundle command ending in exec like cargo metadata
 
-use std::fmt::{Display, Formatter};
-use std::fs::File;
-use std::io::{BufWriter, Write};
-use std::path::PathBuf;
 use crate::{
     finalized_license::{
         finalized_licenses_lookup, FinalizedLicense, LicenseKey, LICENSE_NOT_FOUNT_TEXT,
@@ -16,6 +12,10 @@ use crate::{
 };
 use cargo_metadata::Package;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
+use std::fs::File;
+use std::io::{BufWriter, Write};
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -99,13 +99,11 @@ impl BundleBuilder {
     }
 }
 
-
-
 /// A bundle of licenses
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Bundle {
     root_name: String,
-     pub third_party_libraries: Vec<FinalizedLicense>,
+    pub third_party_libraries: Vec<FinalizedLicense>,
 }
 
 impl Display for Bundle {
@@ -179,9 +177,10 @@ impl Bundle {
         true
     }
 
-    pub fn write_to_disk_human_readable(&self, mut output: Box<dyn Write+ Send>) -> Result<(), std::io::Error> {
-        // let file = File::create(file)?;
-        // let mut writer = BufWriter::new(file);
+    pub fn write_to_disk_human_readable(
+        &self,
+        mut output: Box<dyn Write + Send>,
+    ) -> Result<(), std::io::Error> {
         let content = format!("{self}");
         output.write_all(content.as_bytes())?;
 
