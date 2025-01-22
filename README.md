@@ -46,7 +46,7 @@ To aid in copy-pasting licenses that couldn't be found for one reason other anot
 
 Currently the supported formats are `json`, `yaml`, and `toml`. 
 
-You can also export those previously exported (and maybe edited) files to a human read with `--human-readable-artifact`
+You can also export those previously exported (and maybe edited) files to a human-readable format with `--human-readable-artifact`
 
 ## Common warnings and resolutions
 
