@@ -70,6 +70,10 @@ pub struct Opts {
     /// After filling in not-found licenses, check if new is a strict subset of previous.
     #[structopt(long, short)]
     check_previous: bool,
+
+    /// A list of additional features to pull dependencies from (default features are always enabled)
+    #[structopt(long, short, use_delimiter = true, empty_values = false)]
+    features: Vec<String>,
 }
 
 /// Parse args and set up logging / tracing
@@ -92,7 +96,13 @@ fn main() -> Result<()> {
         None
     };
 
-    let bundle = BundleBuilder::exec_with_previous(previous.as_ref())?;
+    let mut bundle_builder = BundleBuilder::new().features(&opts.features);
+
+    if let Some(previous) = previous.as_ref() {
+        bundle_builder = bundle_builder.previous(previous);
+    }
+
+    let bundle = bundle_builder.exec()?;
 
     let output = get_output(opts.output)?;
 
