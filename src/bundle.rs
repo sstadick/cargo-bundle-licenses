@@ -1,8 +1,6 @@
 //! Find all LICENSE-like files in each packages source repo and match them with the
 //! the licenses specified in the Cargo.toml file.
 
-// TODO: builder for bundle command ending in exec like cargo metadata
-
 use crate::{
     finalized_license::{
         finalized_licenses_lookup, FinalizedLicense, LicenseKey, LICENSE_NOT_FOUNT_TEXT,
@@ -22,15 +20,29 @@ pub enum BundleError {
     PackageLoaderError(#[from] crate::package_loader::PackageLoaderError),
 }
 
-pub struct BundleBuilder {}
+#[derive(Clone, Debug, Default)]
+pub struct BundleBuilder {
+    previous: Option<Bundle>,
+    features: Vec<String>,
+}
 
 impl BundleBuilder {
-    pub fn exec() -> Result<Bundle, BundleError> {
-        Self::exec_with_previous(None)
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    pub fn exec_with_previous(previous: Option<&Bundle>) -> Result<Bundle, BundleError> {
-        let loader = PackageLoader::new()?;
+    pub fn previous(mut self, previous: &Bundle) -> Self {
+        self.previous = Some(previous.clone());
+        self
+    }
+
+    pub fn features(mut self, features: &[String]) -> Self {
+        self.features = features.to_vec();
+        self
+    }
+
+    pub fn exec(&self) -> Result<Bundle, BundleError> {
+        let loader = PackageLoader::new(&self.features)?;
 
         let roots = loader.get_package_roots()?;
         let packages = {
@@ -59,7 +71,7 @@ impl BundleBuilder {
             found_licenses.iter().map(FoundLicense::finalize).collect();
 
         // For any Not Found check in previous to see if a license was manually added for that package-version-license combo and add it
-        if let Some(previous) = previous {
+        if let Some(previous) = &self.previous {
             let lookup = finalized_licenses_lookup(&previous.third_party_libraries);
 
             for lic in &mut finalized_licenses {
