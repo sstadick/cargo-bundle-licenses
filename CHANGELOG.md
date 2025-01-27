@@ -1,3 +1,7 @@
+# v3.0.0
+
+- [feat](https://github.com/sstadick/cargo-bundle-licenses/pull/48): From @balins, all specification of features to pass to better include optional libraries. This is a major version bump as it is a breaking API change for the library portion of this package. On the CLI, there is no change and not specifiying features will result in the default features being used.
+
 # v2.3.0
 
 - [fix](https://github.com/sstadick/cargo-bundle-licenses/pull/46): Further improve detection of BSD license files.
