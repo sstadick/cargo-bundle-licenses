@@ -3,7 +3,7 @@
 use std::collections::{HashSet, VecDeque};
 
 use cargo_metadata::{
-    DependencyKind, Metadata, MetadataCommand, NodeDep, Package, PackageId, Resolve,
+    CargoOpt, DependencyKind, Metadata, MetadataCommand, NodeDep, Package, PackageId, Resolve,
 };
 use thiserror::Error;
 
@@ -26,9 +26,12 @@ pub struct PackageLoader {
 }
 
 impl PackageLoader {
-    /// Create a new package loader that loads teh cargo metadata
-    pub fn new() -> Result<Self, PackageLoaderError> {
-        let metadata = MetadataCommand::new().exec()?;
+    /// Create a new package loader that loads the cargo metadata
+    pub fn new(features: &[String]) -> Result<Self, PackageLoaderError> {
+        let metadata = MetadataCommand::new()
+            .features(CargoOpt::SomeFeatures(features.to_vec()))
+            .exec()?;
+
         Ok(Self { metadata })
     }
 
