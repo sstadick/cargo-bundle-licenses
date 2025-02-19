@@ -1,11 +1,14 @@
 //! Find all LICENSE-like files in each packages source repo and match them with the
 //! the licenses specified in the Cargo.toml file.
 
+use std::str::FromStr as _;
+
 use crate::{
     finalized_license::{
         finalized_licenses_lookup, FinalizedLicense, LicenseKey, LICENSE_NOT_FOUNT_TEXT,
     },
     found_license::{FoundLicense, FoundLicenseError},
+    license::License,
     package_loader::PackageLoader,
 };
 use cargo_metadata::Package;
@@ -24,6 +27,7 @@ pub enum BundleError {
 pub struct BundleBuilder {
     previous: Option<Bundle>,
     features: Vec<String>,
+    prefer: Vec<License>,
 }
 
 impl BundleBuilder {
@@ -38,6 +42,14 @@ impl BundleBuilder {
 
     pub fn features(mut self, features: &[String]) -> Self {
         self.features = features.to_vec();
+        self
+    }
+
+    pub fn prefer(mut self, prefer: &[String]) -> Self {
+        self.prefer = prefer
+            .iter()
+            .map(|p| License::from_str(p).unwrap())
+            .collect();
         self
     }
 
@@ -100,6 +112,24 @@ impl BundleBuilder {
                         }
                     }
                 }
+            }
+        }
+
+        // For packages with multiple licenses, retain only the preferred license
+        for lic in &mut finalized_licenses {
+            // TODO: handle AND in licenses
+            if lic.license.contains("AND") {
+                continue;
+            }
+
+            if let Some(preferred) = self.prefer.iter().find(|&preferred| {
+                lic.licenses
+                    .iter()
+                    .any(|l| &License::from_str(&l.license).unwrap() == preferred)
+            }) {
+                lic.licenses
+                    .retain(|l| &License::from_str(&l.license).unwrap() == preferred);
+                lic.license = preferred.to_string();
             }
         }
 

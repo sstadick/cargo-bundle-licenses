@@ -74,6 +74,10 @@ pub struct Opts {
     /// A list of additional features to pull dependencies from (default features are always enabled)
     #[structopt(long, short, use_delimiter = true, empty_values = false)]
     features: Vec<String>,
+
+    /// A list of preferred licenses to use when multiple licenses are found
+    #[structopt(long, short, use_delimiter = true, empty_values = false)]
+    prefer: Vec<String>,
 }
 
 /// Parse args and set up logging / tracing
@@ -96,7 +100,9 @@ fn main() -> Result<()> {
         None
     };
 
-    let mut bundle_builder = BundleBuilder::new().features(&opts.features);
+    let mut bundle_builder = BundleBuilder::new()
+        .features(&opts.features)
+        .prefer(&opts.prefer);
 
     if let Some(previous) = previous.as_ref() {
         bundle_builder = bundle_builder.previous(previous);
