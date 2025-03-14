@@ -72,7 +72,7 @@ pub struct Opts {
     check_previous: bool,
 
     /// A list of additional features to pull dependencies from (default features are always enabled)
-    #[structopt(long, short, use_delimiter = true, empty_values = false)]
+    #[structopt(long, use_delimiter = true, empty_values = false)]
     features: Vec<String>,
 
     /// A list of preferred licenses to use when multiple licenses are found

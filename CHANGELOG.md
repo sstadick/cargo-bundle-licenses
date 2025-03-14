@@ -1,3 +1,7 @@
+# v3.2.0
+
+- fix: make `--features` a long opt only to not clash with  `-f/--format`
+
 # v3.1.0
 
 - [feat](https://github.com/sstadick/cargo-bundle-licenses/pull/50): From @balins, allow for specifying a preference of which license to keep in multi-license scenarios.
