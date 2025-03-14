@@ -76,7 +76,7 @@ pub struct Opts {
     features: Vec<String>,
 
     /// A list of preferred licenses to use when multiple licenses are found
-    #[structopt(long, short, use_delimiter = true, empty_values = false)]
+    #[structopt(long, use_delimiter = true, empty_values = false)]
     prefer: Vec<String>,
 }
 

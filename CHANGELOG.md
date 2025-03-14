@@ -1,6 +1,7 @@
-# v3.2.0
+# v4.0.0
 
 - fix: make `--features` a long opt only to not clash with  `-f/--format`
+- fix: make `--prefer` a long opt only to not clash with `-p/--previous`
 
 # v3.1.0
 
