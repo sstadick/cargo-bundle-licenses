@@ -162,6 +162,14 @@ impl Bundle {
         }
     }
 
+    pub fn root_name(&self) -> &str {
+        &self.root_name
+    }
+
+    pub fn third_party_libraries(&self) -> &[FinalizedLicense] {
+        &self.third_party_libraries
+    }
+
     /// Compare another [`Bundle`] against this [`Bundle`] requiring that "other" be a strict subset of self.
     pub fn check_subset(&self, other: &Self) -> bool {
         if self.root_name != other.root_name {
