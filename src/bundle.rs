@@ -1,7 +1,7 @@
 //! Find all LICENSE-like files in each packages source repo and match them with the
 //! the licenses specified in the Cargo.toml file.
 
-use std::str::FromStr as _;
+use std::{fmt::Write as _, str::FromStr as _};
 
 use crate::{
     finalized_license::{
@@ -149,7 +149,7 @@ impl Bundle {
         let roots = if let Some((first, rest)) = roots.split_first() {
             let mut roots = first.name.to_string();
             for root in rest {
-                roots = format!("{roots}, {}", root.name.as_str())
+                let _ = write!(roots, ", {}", root.name.as_str());
             }
             roots
         } else {
