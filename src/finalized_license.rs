@@ -45,7 +45,7 @@ pub struct FinalizedLicense {
 impl FinalizedLicense {
     pub fn new(package: &Package, license: License, licenses: Vec<LicenseAndText>) -> Self {
         Self {
-            package_name: package.name.clone(),
+            package_name: package.name.to_string(),
             package_version: package.version.to_string(),
             repository: package.repository.to_owned().unwrap_or_default(),
             license: package

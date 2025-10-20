@@ -146,20 +146,19 @@ pub struct Bundle {
 
 impl Bundle {
     pub fn new(roots: &[&Package], third_party_libraries: Vec<FinalizedLicense>) -> Self {
-        let root_name = if roots.len() == 1 {
-            roots[0].name.clone()
-        } else {
-            let mut roots_name = String::new();
-            roots_name += roots[0].name.as_str();
-            for root in roots.iter().take(roots.len() - 1).skip(1) {
-                roots_name += ", ";
-                roots_name += root.name.as_str();
+
+        let roots = if let Some((first, rest)) = roots.split_first() {
+            let mut roots = first.name.to_string();
+            for root in rest {
+                roots = format!("{roots}, {}", root.name.as_str())
             }
-            roots_name
+            roots
+        } else {
+            String::new()
         };
 
         Self {
-            root_name,
+            root_name: roots,
             third_party_libraries,
         }
     }
