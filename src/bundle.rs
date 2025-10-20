@@ -146,7 +146,6 @@ pub struct Bundle {
 
 impl Bundle {
     pub fn new(roots: &[&Package], third_party_libraries: Vec<FinalizedLicense>) -> Self {
-
         let roots = if let Some((first, rest)) = roots.split_first() {
             let mut roots = first.name.to_string();
             for root in rest {

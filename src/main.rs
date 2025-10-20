@@ -7,8 +7,8 @@ use std::{
 };
 
 use anyhow::{Error, Result};
-use clap::{self, Parser};
 use bundle_licenses_lib::{bundle::BundleBuilder, format::Format};
+use clap::{self, Parser};
 use env_logger::Env;
 
 use git_version::git_version;
