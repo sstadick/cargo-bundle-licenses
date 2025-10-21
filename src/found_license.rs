@@ -94,7 +94,7 @@ impl FoundLicense {
                     log::warn!(
                         "License is not specified for {}:{} in package: {}",
                         package.name,
-                        package.version.to_string(),
+                        package.version,
                         package.manifest_path
                     );
                 }
@@ -105,21 +105,21 @@ impl FoundLicense {
                             "Confidence level SEMI for {} license in {}:{} - {}",
                             license,
                             package.name,
-                            package.version.to_string(),
+                            package.version,
                             package.manifest_path
                         ),
                         Confidence::Unsure => log::warn!(
                             "Confidence level UNSURE for {} license in {}:{} - {}",
                             license,
                             package.name,
-                            package.version.to_string(),
+                            package.version,
                             package.manifest_path
                         ),
                         Confidence::NoTemplate => log::warn!(
                             "No template for {} license in {}:{} - {}",
                             license,
                             package.name,
-                            package.version.to_string(),
+                            package.version,
                             package.manifest_path
                         ),
                         _ => unimplemented!(),
@@ -129,7 +129,7 @@ impl FoundLicense {
                             "Multiple possible licenses found for {} license in {}:{} - {}",
                             license,
                             package.name,
-                            package.version.to_string(),
+                            package.version,
                             package.manifest_path
                         );
                     }
@@ -138,7 +138,7 @@ impl FoundLicense {
                             "No license found for {} license in {}:{} - {}",
                             license,
                             package.name,
-                            package.version.to_string(),
+                            package.version,
                             package.manifest_path
                         );
                     }

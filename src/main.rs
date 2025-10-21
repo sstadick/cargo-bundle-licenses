@@ -8,9 +8,8 @@ use std::{
 
 use anyhow::{Error, Result};
 use bundle_licenses_lib::{bundle::BundleBuilder, format::Format};
+use clap::{self, Parser};
 use env_logger::Env;
-use structopt::{clap::AppSettings::ColoredHelp, StructOpt};
-use strum::VariantNames;
 
 use git_version::git_version;
 
@@ -52,11 +51,11 @@ fn is_broken_pipe(err: &Error) -> bool {
     false
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(bin_name = "cargo bundle-licenses", author, global_setting(ColoredHelp), version = CARGO_BUNDLE_LICENSES_VERSION)]
+#[derive(Parser, Debug)]
+#[structopt(bin_name = "cargo bundle-licenses", author, version = CARGO_BUNDLE_LICENSES_VERSION)]
 pub struct Opts {
     /// The format to write the output in
-    #[structopt(long, short, default_value = "toml", possible_values = Format::VARIANTS)]
+    #[structopt(long, short, default_value = "toml", value_enum)]
     format: Format,
 
     /// The file to write the output to. None or "-" for STDOUT
@@ -72,11 +71,11 @@ pub struct Opts {
     check_previous: bool,
 
     /// A list of additional features to pull dependencies from (default features are always enabled)
-    #[structopt(long, use_delimiter = true, empty_values = false)]
+    #[structopt(long, value_delimiter =',', value_parser = clap::builder::NonEmptyStringValueParser::new())]
     features: Vec<String>,
 
     /// A list of preferred licenses to use when multiple licenses are found
-    #[structopt(long, use_delimiter = true, empty_values = false)]
+    #[structopt(long, value_delimiter =',', value_parser = clap::builder::NonEmptyStringValueParser::new())]
     prefer: Vec<String>,
 }
 
@@ -88,7 +87,8 @@ fn setup() -> Opts {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     // Remove the extra arg from cargo
     let args = env::args().filter(|x| x != "bundle-licenses");
-    Opts::from_iter(args)
+
+    Opts::parse_from(args)
 }
 
 fn main() -> Result<()> {
