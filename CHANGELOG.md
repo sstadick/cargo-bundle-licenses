@@ -1,3 +1,7 @@
+# v4.2.0
+
+- [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/56): add accessors for the fields of `Bundle`
+
 # v4.1.0
 
 - [chore](https://github.com/sstadick/cargo-bundle-licenses/pull/55): update deps to remove transitive dependency on `syn@1`
