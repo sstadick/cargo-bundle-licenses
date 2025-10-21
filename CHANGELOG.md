@@ -1,3 +1,8 @@
+# v4.1.0
+
+- [chore](https://github.com/sstadick/cargo-bundle-licenses/pull/55): update deps to remove transitive dependency on `syn@1`
+- [fix](https://github.com/sstadick/cargo-bundle-licenses/pull/55): `Bundle::new` no longer panics when given an empty roots slice
+
 # v4.0.0
 
 - fix: make `--features` a long opt only to not clash with  `-f/--format`
