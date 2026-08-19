@@ -25,25 +25,25 @@ default = ["binary-dependencies"]
 binary-dependencies = ["anyhow", "env_logger", "clap", "git-version"]
 
 [dependencies]
-anyhow = { version = "1.0.100", optional = true }
-cargo_metadata = "0.23.0"
-env_logger = { version = "0.11.8", optional = true }
+anyhow = { version = "1.0.104", optional = true }
+cargo_metadata = "0.23.1"
+env_logger = { version = "0.11.11", optional = true }
 git-version = { version = "0.3.9", optional = true }
 
 # https://doc.rust-lang.org/cargo/guide/cargo-home.html points to this for finding cargo home
-home = "0.5.11"
-itertools = "0.14.0"
-log = "0.4.28"
-regex = "1.12.2"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
+home = "0.5.12"
+itertools = "0.15.0"
+log = "0.4.33"
+regex = "1.13.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
 serde_yaml = "0.9.34"
 slug = "0.1.6"
-spdx = "0.12.0"
-clap = { version = "4.5.50", optional = true, features = ["derive"] }
-strum = { version = "0.27.2", features = ["derive"] }
-thiserror = "2.0.17"
-toml = "0.9.8"
+spdx = "0.13.5"
+clap = { version = "4.6.6", optional = true, features = ["derive"] }
+strum = { version = "0.28.0", features = ["derive"] }
+thiserror = "2.0.20"
+toml = "1.1.4"
 
 # https://github.com/sstadick/cargo-bundle-licenses/archive/refs/tags/v2.1.1.tar.gz
 # https://github.com/sstadick/cargo-bundle-licenses/releases/download/v2.1.1/cargo-bundle-licenses-linux-amd64-src.tar.gz
