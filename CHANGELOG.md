@@ -1,3 +1,7 @@
+# v5.0.0
+
+- [feature](https://github.com/sstadick/cargo-bundle-licenses/issues/57): mark `License` struct as `non_exhaustive`
+
 # v4.2.0
 
 - [feature](https://github.com/sstadick/cargo-bundle-licenses/pull/56): add accessors for the fields of `Bundle`

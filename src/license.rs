@@ -12,6 +12,7 @@ use spdx::ParseMode;
 
 #[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Debug, Clone, Default)]
 #[allow(non_camel_case_types)]
+#[non_exhaustive]
 pub enum License {
     // Licenses specified in the [SPDX License List](https://spdx.org/licenses/)
     Unlicense,
