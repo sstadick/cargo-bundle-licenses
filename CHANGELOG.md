@@ -5,7 +5,9 @@
   - now requires at least rust 1.88
   - toml 1.1.0 spec
 - fix: log a warning when parsing a license expression fails
-- fix: enable parsing of unknown licenses in spdx expressions
+- fix: enable parsing of unknown licenses in spdx expressions, including `AND` and parentheses
+  - preserve custom license and exception names so license files and text from previous bundles remain discoverable
+  - retain explicitly supplied `LicenseRef-`, `AdditionRef-`, and `DocumentRef-` identifiers
 
 # v4.2.0
 

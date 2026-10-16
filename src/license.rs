@@ -7,8 +7,9 @@
 use std::{fmt, path::PathBuf, str::FromStr};
 
 use slug::slugify;
-use spdx::expression::ExprNode;
-use spdx::ParseMode;
+use spdx::expression::{ExprNode, ExpressionReq};
+use spdx::lexer::{Lexer, Token};
+use spdx::{AdditionItem, LicenseItem, ParseMode};
 
 #[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Debug, Clone, Default)]
 #[allow(non_camel_case_types)]
@@ -143,6 +144,39 @@ fn simple_license(s: &str) -> License {
     }
 }
 
+fn spdx_requirement_license(source: &str, req: &ExpressionReq) -> License {
+    // SPDX formats bare unknown identifiers as LicenseRef-/AdditionRef- names.
+    // Preserve the original tokens for custom names: those names are also used
+    // to find license files and to look up text in a previous bundle. Explicit
+    // references keep their prefixes, while recognized SPDX names stay canonical.
+    let source = &source[req.span.start as usize..];
+    let mut tokens = Lexer::new_mode(source, EXTRA_LAX)
+        .map(|token| token.expect("the SPDX expression has already been parsed"));
+    let license_token = tokens.next().expect("a requirement has a license token");
+    let mut name = match &req.req.license {
+        LicenseItem::Spdx { .. } => req.req.license.to_string(),
+        LicenseItem::Other(_) => source[license_token.span].to_owned(),
+    };
+
+    if let Some(addition) = &req.req.addition {
+        name.push_str(" WITH ");
+        match addition {
+            AdditionItem::Spdx(_) => name.push_str(&addition.to_string()),
+            AdditionItem::Other(_) => {
+                // Requirement spans do not include WITH or its addition in spdx
+                // 0.13. Use the lexer to handle whitespace, case and postfix +.
+                tokens
+                    .find(|token| matches!(token.token, Token::With))
+                    .expect("an addition is preceded by WITH");
+                let addition_token = tokens.next().expect("WITH has an addition token");
+                name.push_str(&source[addition_token.span]);
+            }
+        }
+    }
+
+    simple_license(&name)
+}
+
 fn process_spdx_expression(expr: spdx::Expression) -> License {
     let mut collection = Vec::new();
 
@@ -152,7 +186,7 @@ fn process_spdx_expression(expr: spdx::Expression) -> License {
                 /* ignoring operators as we just need a list of used licenses and not how they are combined */
             }
             ExprNode::Req(req) => {
-                let license = simple_license(&req.req.to_string());
+                let license = spdx_requirement_license(expr.as_ref(), req);
                 // don't include licenses more than once
                 if !collection.contains(&license) {
                     collection.push(license)
