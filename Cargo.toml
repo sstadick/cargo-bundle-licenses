@@ -3,6 +3,9 @@ name = "cargo-bundle-licenses"
 version = "5.0.0-alpha.0"
 authors = ["Seth Stadick"]
 edition = "2018"
+rust-version = "1.88"
+# Prefer dependencies compatible with rust-version when resolving a fresh lockfile.
+resolver = "3"
 readme = "README.md"
 license = "MIT/Apache-2.0"
 description = "Bundle licensing of dependencies"
