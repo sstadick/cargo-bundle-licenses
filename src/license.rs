@@ -314,11 +314,118 @@ mod test {
     }
 
     #[test]
+    fn custom_identifiers_keep_their_original_names() {
+        for name in [
+            "DoesNotExist42",
+            "LicenseRef-DoesNotExist42",
+            "LicenseRef-LicenseRef-DoesNotExist42",
+            "DocumentRef-doc:LicenseRef-DoesNotExist42",
+        ] {
+            assert_eq!(
+                License::from_str(&format!("  {name}  ")),
+                Ok(License::Custom(name.to_owned())),
+                "{name}"
+            );
+        }
+
+        // A bare name must not collapse into an explicitly supplied reference.
+        assert_eq!(
+            License::from_str("DoesNotExist42 OR LicenseRef-DoesNotExist42"),
+            Ok(License::Multiple(vec![
+                License::Custom("DoesNotExist42".to_owned()),
+                License::Custom("LicenseRef-DoesNotExist42".to_owned()),
+            ]))
+        );
+    }
+
+    #[test]
+    fn unknown_licenses_in_nested_expressions() {
+        for expression in [
+            "DoesNotExist42/MIT",
+            "(DoesNotExist42 OR MIT) AND DoesNotExist42",
+            "((DoesNotExist42 or MIT) and (MIT OR DoesNotExist42))",
+            "\t(DoesNotExist42\nOR\tMIT)\n",
+        ] {
+            assert_eq!(
+                License::from_str(expression),
+                Ok(License::Multiple(vec![
+                    License::Custom("DoesNotExist42".to_owned()),
+                    License::MIT,
+                ])),
+                "{expression}"
+            );
+        }
+    }
+
+    #[test]
+    fn exceptions_stay_attached_without_synthesized_references() {
+        for requirement in [
+            "DoesNotExist42 WITH LLVM-exception",
+            "DoesNotExist42 WITH UnknownException42",
+            "Apache-2.0 WITH UnknownException42",
+            "Apache-2.0 WITH AdditionRef-UnknownException42",
+            "Apache-2.0 WITH DocumentRef-doc:AdditionRef-UnknownException42",
+            "LicenseRef-DoesNotExist42 WITH UnknownException42",
+            "DocumentRef-doc:LicenseRef-DoesNotExist42 WITH AdditionRef-UnknownException42",
+            "MIT+ WITH UnknownException42",
+        ] {
+            assert_eq!(
+                License::from_str(&format!("({requirement}) AND ISC")),
+                Ok(License::Multiple(vec![
+                    License::Custom(requirement.to_owned()),
+                    License::ISC,
+                ])),
+                "{requirement}"
+            );
+        }
+
+        assert_eq!(
+            License::from_str("Apache-2.0\twith\nUnknownException42"),
+            Ok(License::Custom(
+                "Apache-2.0 WITH UnknownException42".to_owned()
+            ))
+        );
+    }
+
+    #[test]
+    fn recognized_licenses_remain_canonical() {
+        assert_eq!(License::from_str("Apache 2.0"), Ok(License::Apache_2_0));
+        assert_eq!(
+            License::from_str("GPL-2.0+ WITH UnknownException42"),
+            Ok(License::Custom(
+                "GPL-2.0-or-later WITH UnknownException42".to_owned()
+            ))
+        );
+        assert_eq!(
+            License::from_str("Apache-2.0 with LLVM-exception"),
+            Ok(License::Apache_2_0_WITH_LLVM_exception)
+        );
+    }
+
+    #[test]
+    fn malformed_expressions_still_use_the_fallback() {
+        for expression in ["", "A custom license", "(DoesNotExist42", "MIT AND", "💡"] {
+            assert_eq!(
+                License::from_str(expression),
+                Ok(License::Custom(expression.to_owned())),
+                "{expression}"
+            );
+        }
+        assert_eq!(
+            License::from_str("A custom license OR MIT"),
+            Ok(License::Multiple(vec![
+                License::MIT,
+                License::Custom("A custom license".to_owned()),
+            ]))
+        );
+    }
+
+    #[test]
     fn complex_spdx() {
         assert_eq!(
             License::from_str("DoesNotExist42 OR MIT"),
             Ok(License::Multiple(vec![
-                License::Custom("LicenseRef-DoesNotExist42".to_string()),
+                License::Custom("DoesNotExist42".to_string()),
                 License::MIT,
             ]))
         );
@@ -326,14 +433,14 @@ mod test {
             License::from_str("MIT OR DoesNotExist42 AND Apache-2.0"),
             Ok(License::Multiple(vec![
                 License::MIT,
-                License::Custom("LicenseRef-DoesNotExist42".to_string()),
+                License::Custom("DoesNotExist42".to_string()),
                 License::Apache_2_0
             ]))
         );
         assert_eq!(
             License::from_str("(DoesNotExist42 OR MIT) AND Apache-2.0"),
             Ok(License::Multiple(vec![
-                License::Custom("LicenseRef-DoesNotExist42".to_string()),
+                License::Custom("DoesNotExist42".to_string()),
                 License::MIT,
                 License::Apache_2_0
             ]))
