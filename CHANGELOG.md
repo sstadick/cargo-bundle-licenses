@@ -5,6 +5,7 @@
   - now requires at least rust 1.88, declared in package metadata and tested with committed and freshly resolved dependencies
   - use Cargo's MSRV-aware resolver for fresh source builds
   - toml 1.1.0 spec
+- fix: build macOS amd64 release artifacts on an Intel runner and verify their architecture before upload
 - fix: log a warning when parsing a license expression fails
 - fix: enable parsing of unknown licenses in spdx expressions, including `AND` and parentheses
   - preserve custom license and exception names so license files and text from previous bundles remain discoverable

@@ -15,7 +15,8 @@ jobs:
           - os: ubuntu-latest
             artifact_name: cargo-bundle-licenses
             asset_name: cargo-bundle-licenses-linux-amd64
-          - os: macos-latest
+          # Keep the amd64 download on Intel; macos-latest now runs on ARM64.
+          - os: macos-15-intel
             artifact_name: cargo-bundle-licenses
             asset_name: cargo-bundle-licenses-macos-amd64
           - os: windows-latest
@@ -29,6 +30,11 @@ jobs:
         shell: bash
         run: |
           cargo build --release --locked
+
+      - name: Verify macOS binary architecture
+        if: runner.os == 'macOS'
+        shell: bash
+        run: test "$(lipo -archs target/release/${{ matrix.artifact_name }})" = x86_64
 
       - name: Build archive
         shell: bash
