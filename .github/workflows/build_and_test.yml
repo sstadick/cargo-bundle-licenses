@@ -6,6 +6,35 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  msrv:
+    name: Rust 1.88 (${{ matrix.lockfile }} lockfile)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lockfile: [committed, fresh]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install minimum supported toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: '1.88.0'
+          override: true
+
+      - name: Resolve fresh dependencies
+        if: matrix.lockfile == 'fresh'
+        run: |
+          rm Cargo.lock
+          cargo generate-lockfile
+
+      - name: Test default features
+        run: cargo test --locked
+
+      - name: Test library without default features
+        run: cargo test --locked --no-default-features
+
   check:
     name: Check
     runs-on: ubuntu-latest

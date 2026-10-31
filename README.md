@@ -13,8 +13,11 @@ Bundle all third-party licenses into a single file.
 
 ## Install
 
+Rust 1.88 or newer is required. Use `--locked` to install with the dependency
+versions tested for the release:
+
 ```bash
-cargo install cargo-bundle-licenses
+cargo install cargo-bundle-licenses --locked
 ```
 
 ## Usage

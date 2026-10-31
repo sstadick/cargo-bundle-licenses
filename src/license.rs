@@ -7,8 +7,9 @@
 use std::{fmt, path::PathBuf, str::FromStr};
 
 use slug::slugify;
-use spdx::expression::ExprNode;
-use spdx::ParseMode;
+use spdx::expression::{ExprNode, ExpressionReq};
+use spdx::lexer::{Lexer, Token};
+use spdx::{AdditionItem, LicenseItem, ParseMode};
 
 #[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Debug, Clone, Default)]
 #[allow(non_camel_case_types)]
@@ -79,14 +80,22 @@ impl License {
     }
 }
 
+const EXTRA_LAX: ParseMode = {
+    let mut mode = ParseMode::LAX;
+    mode.allow_unknown = true;
+    mode
+};
+
 impl FromStr for License {
     type Err = core::convert::Infallible;
 
     fn from_str(s: &str) -> Result<License, core::convert::Infallible> {
-        if let Ok(expr) = spdx::expression::Expression::parse_mode(s, ParseMode::LAX) {
-            Ok(process_spdx_expression(expr))
-        } else {
-            Ok(simple_license(s))
+        match spdx::expression::Expression::parse_mode(s, EXTRA_LAX) {
+            Ok(expr) => Ok(process_spdx_expression(expr)),
+            Err(err) => {
+                log::warn!("Could not parse license expression `{s}`: {err}");
+                Ok(simple_license(s))
+            }
         }
     }
 }
@@ -135,6 +144,39 @@ fn simple_license(s: &str) -> License {
     }
 }
 
+fn spdx_requirement_license(source: &str, req: &ExpressionReq) -> License {
+    // SPDX formats bare unknown identifiers as LicenseRef-/AdditionRef- names.
+    // Preserve the original tokens for custom names: those names are also used
+    // to find license files and to look up text in a previous bundle. Explicit
+    // references keep their prefixes, while recognized SPDX names stay canonical.
+    let source = &source[req.span.start as usize..];
+    let mut tokens = Lexer::new_mode(source, EXTRA_LAX)
+        .map(|token| token.expect("the SPDX expression has already been parsed"));
+    let license_token = tokens.next().expect("a requirement has a license token");
+    let mut name = match &req.req.license {
+        LicenseItem::Spdx { .. } => req.req.license.to_string(),
+        LicenseItem::Other(_) => source[license_token.span].to_owned(),
+    };
+
+    if let Some(addition) = &req.req.addition {
+        name.push_str(" WITH ");
+        match addition {
+            AdditionItem::Spdx(_) => name.push_str(&addition.to_string()),
+            AdditionItem::Other(_) => {
+                // Requirement spans do not include WITH or its addition in spdx
+                // 0.13. Use the lexer to handle whitespace, case and postfix +.
+                tokens
+                    .find(|token| matches!(token.token, Token::With))
+                    .expect("an addition is preceded by WITH");
+                let addition_token = tokens.next().expect("WITH has an addition token");
+                name.push_str(&source[addition_token.span]);
+            }
+        }
+    }
+
+    simple_license(&name)
+}
+
 fn process_spdx_expression(expr: spdx::Expression) -> License {
     let mut collection = Vec::new();
 
@@ -144,7 +186,7 @@ fn process_spdx_expression(expr: spdx::Expression) -> License {
                 /* ignoring operators as we just need a list of used licenses and not how they are combined */
             }
             ExprNode::Req(req) => {
-                let license = simple_license(&req.req.to_string());
+                let license = spdx_requirement_license(expr.as_ref(), req);
                 // don't include licenses more than once
                 if !collection.contains(&license) {
                     collection.push(license)
@@ -306,7 +348,137 @@ mod test {
     }
 
     #[test]
+    fn custom_identifiers_keep_their_original_names() {
+        for name in [
+            "DoesNotExist42",
+            "LicenseRef-DoesNotExist42",
+            "LicenseRef-LicenseRef-DoesNotExist42",
+            "DocumentRef-doc:LicenseRef-DoesNotExist42",
+        ] {
+            assert_eq!(
+                License::from_str(&format!("  {name}  ")),
+                Ok(License::Custom(name.to_owned())),
+                "{name}"
+            );
+        }
+
+        // A bare name must not collapse into an explicitly supplied reference.
+        assert_eq!(
+            License::from_str("DoesNotExist42 OR LicenseRef-DoesNotExist42"),
+            Ok(License::Multiple(vec![
+                License::Custom("DoesNotExist42".to_owned()),
+                License::Custom("LicenseRef-DoesNotExist42".to_owned()),
+            ]))
+        );
+    }
+
+    #[test]
+    fn unknown_licenses_in_nested_expressions() {
+        for expression in [
+            "DoesNotExist42/MIT",
+            "(DoesNotExist42 OR MIT) AND DoesNotExist42",
+            "((DoesNotExist42 or MIT) and (MIT OR DoesNotExist42))",
+            "\t(DoesNotExist42\nOR\tMIT)\n",
+        ] {
+            assert_eq!(
+                License::from_str(expression),
+                Ok(License::Multiple(vec![
+                    License::Custom("DoesNotExist42".to_owned()),
+                    License::MIT,
+                ])),
+                "{expression}"
+            );
+        }
+    }
+
+    #[test]
+    fn exceptions_stay_attached_without_synthesized_references() {
+        for requirement in [
+            "DoesNotExist42 WITH LLVM-exception",
+            "DoesNotExist42 WITH UnknownException42",
+            "Apache-2.0 WITH UnknownException42",
+            "Apache-2.0 WITH AdditionRef-UnknownException42",
+            "Apache-2.0 WITH DocumentRef-doc:AdditionRef-UnknownException42",
+            "LicenseRef-DoesNotExist42 WITH UnknownException42",
+            "DocumentRef-doc:LicenseRef-DoesNotExist42 WITH AdditionRef-UnknownException42",
+            "MIT+ WITH UnknownException42",
+        ] {
+            assert_eq!(
+                License::from_str(&format!("({requirement}) AND ISC")),
+                Ok(License::Multiple(vec![
+                    License::Custom(requirement.to_owned()),
+                    License::ISC,
+                ])),
+                "{requirement}"
+            );
+        }
+
+        assert_eq!(
+            License::from_str("Apache-2.0\twith\nUnknownException42"),
+            Ok(License::Custom(
+                "Apache-2.0 WITH UnknownException42".to_owned()
+            ))
+        );
+    }
+
+    #[test]
+    fn recognized_licenses_remain_canonical() {
+        assert_eq!(License::from_str("Apache 2.0"), Ok(License::Apache_2_0));
+        assert_eq!(
+            License::from_str("GPL-2.0+ WITH UnknownException42"),
+            Ok(License::Custom(
+                "GPL-2.0-or-later WITH UnknownException42".to_owned()
+            ))
+        );
+        assert_eq!(
+            License::from_str("Apache-2.0 with LLVM-exception"),
+            Ok(License::Apache_2_0_WITH_LLVM_exception)
+        );
+    }
+
+    #[test]
+    fn malformed_expressions_still_use_the_fallback() {
+        for expression in ["", "A custom license", "(DoesNotExist42", "MIT AND", "💡"] {
+            assert_eq!(
+                License::from_str(expression),
+                Ok(License::Custom(expression.to_owned())),
+                "{expression}"
+            );
+        }
+        assert_eq!(
+            License::from_str("A custom license OR MIT"),
+            Ok(License::Multiple(vec![
+                License::MIT,
+                License::Custom("A custom license".to_owned()),
+            ]))
+        );
+    }
+
+    #[test]
     fn complex_spdx() {
+        assert_eq!(
+            License::from_str("DoesNotExist42 OR MIT"),
+            Ok(License::Multiple(vec![
+                License::Custom("DoesNotExist42".to_string()),
+                License::MIT,
+            ]))
+        );
+        assert_eq!(
+            License::from_str("MIT OR DoesNotExist42 AND Apache-2.0"),
+            Ok(License::Multiple(vec![
+                License::MIT,
+                License::Custom("DoesNotExist42".to_string()),
+                License::Apache_2_0
+            ]))
+        );
+        assert_eq!(
+            License::from_str("(DoesNotExist42 OR MIT) AND Apache-2.0"),
+            Ok(License::Multiple(vec![
+                License::Custom("DoesNotExist42".to_string()),
+                License::MIT,
+                License::Apache_2_0
+            ]))
+        );
         assert_eq!(
             License::from_str("Apache-2.0 OR MIT"),
             Ok(License::Multiple(vec![License::Apache_2_0, License::MIT]))
