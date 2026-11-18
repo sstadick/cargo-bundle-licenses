@@ -20,6 +20,7 @@ pub enum License {
     BSD_0_Clause,
     CC0_1_0,
     MIT,
+    MIT_0,
     X11,
     BSD_2_Clause,
     BSD_3_Clause,
@@ -57,6 +58,7 @@ impl License {
         Some(match *self {
             License::Unlicense => include_str!("licenses/Unlicense"),
             License::MIT => include_str!("licenses/MIT"),
+            License::MIT_0 => include_str!("licenses/MIT-0"),
             License::Apache_2_0 => include_str!("licenses/Apache-2.0"),
             License::Apache_2_0_WITH_LLVM_exception => {
                 include_str!("licenses/Apache-2.0_WITH_LLVM-exception")
@@ -106,6 +108,7 @@ fn simple_license(s: &str) -> License {
         "0BSD" => License::BSD_0_Clause,
         "CC0-1.0" => License::CC0_1_0,
         "MIT" => License::MIT,
+        "MIT-0" => License::MIT_0,
         "X11" => License::X11,
         "BSD-2-Clause" => License::BSD_2_Clause,
         "BSD-3-Clause" => License::BSD_3_Clause,
@@ -209,6 +212,7 @@ impl fmt::Display for License {
             License::BSD_0_Clause => write!(w, "0BSD"),
             License::CC0_1_0 => write!(w, "CC0-1.0"),
             License::MIT => write!(w, "MIT"),
+            License::MIT_0 => write!(w, "MIT-0"),
             License::X11 => write!(w, "X11"),
             License::BSD_2_Clause => write!(w, "BSD-2-Clause"),
             License::BSD_3_Clause => write!(w, "BSD-3-Clause"),
@@ -265,6 +269,10 @@ impl License {
                 slugify(self.to_string()).to_lowercase(),
                 String::from("boost"),
             ],
+            License::MIT_0 => vec![
+                slugify(self.to_string().to_lowercase()),
+                String::from("mit0"),
+            ],
             License::Unicode_3_0 | License::UnicodeDFS2016 => vec![
                 slugify(self.to_string()).to_lowercase(),
                 String::from("unicode"),
@@ -286,6 +294,7 @@ mod test {
         assert_eq!(License::from_str("0BSD"), Ok(License::BSD_0_Clause));
         assert_eq!(License::from_str("CC0-1.0"), Ok(License::CC0_1_0));
         assert_eq!(License::from_str("MIT"), Ok(License::MIT));
+        assert_eq!(License::from_str("MIT-0"), Ok(License::MIT_0));
         assert_eq!(License::from_str("X11"), Ok(License::X11));
         assert_eq!(License::from_str("BSD-2-Clause"), Ok(License::BSD_2_Clause));
         assert_eq!(License::from_str("BSD-3-Clause"), Ok(License::BSD_3_Clause));
