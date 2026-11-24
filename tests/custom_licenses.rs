@@ -181,3 +181,32 @@ fn reuses_previous_custom_text_and_checks_unchanged_bundles() {
         }
     }
 }
+
+#[test]
+fn discovers_bsd_license_files_named_by_their_spdx_identifier() {
+    for (license, template) in [
+        ("BSD-2-Clause", include_str!("../src/licenses/BSD-2-Clause")),
+        ("BSD-3-Clause", include_str!("../src/licenses/BSD-3-Clause")),
+    ] {
+        for file_name in [format!("LICENSE.{license}"), format!("LICENSE-{license}")] {
+            let expression = format!("{license} AND MIT");
+            let project = Project::new(&expression);
+            project.license_file(&file_name, template);
+            project.license_file("LICENSE.MIT", include_str!("../src/licenses/MIT"));
+            let bundle = project.bundle();
+            let package = &bundle.third_party_libraries()[0];
+            let mut actual: Vec<_> = package
+                .licenses
+                .iter()
+                .map(|license| (license.license.as_str(), license.text.as_str()))
+                .collect();
+            actual.sort();
+            let mut expected = vec![
+                (license, template),
+                ("MIT", include_str!("../src/licenses/MIT")),
+            ];
+            expected.sort();
+            assert_eq!(actual, expected, "{file_name}");
+        }
+    }
+}

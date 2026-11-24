@@ -259,8 +259,16 @@ impl License {
                 String::from("apache-2"),
             ],
             License::BSD_0_Clause => vec![String::from("bsd"), String::from("0bsd")],
-            License::BSD_2_Clause => vec![String::from("bsd"), String::from("2bsd")],
-            License::BSD_3_Clause => vec![String::from("bsd"), String::from("3bsd")],
+            License::BSD_2_Clause => vec![
+                slugify(self.to_string()).to_lowercase(),
+                String::from("bsd"),
+                String::from("2bsd"),
+            ],
+            License::BSD_3_Clause => vec![
+                slugify(self.to_string()).to_lowercase(),
+                String::from("bsd"),
+                String::from("3bsd"),
+            ],
             License::BSL_1_0 => vec![
                 slugify(self.to_string()).to_lowercase(),
                 String::from("boost"),
